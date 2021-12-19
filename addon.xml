@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="daum-movie-scraper" name="The Daum Movie Scraper in Python" version="1.0.0" provider-name="th-hwang">
+    <requires>
+        <import addon="xbmc.metadata" version="2.1.0"/>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.requests" version="2.9.1"/>
+    </requires>
+    <extension point="xbmc.metadata.scraper.movies" library="python/daum-movie-scraper.py"/>
+    <extension point="xbmc.addon.metadata">
+        <reuselanguageinvoker>true</reuselanguageinvoker>
+        <news>v1.0.0 (2021-12-25)
+- Initial version
+- Change xml to python for supporting Kodi +19
+- Update daum links</news>
+        <platform>all</platform>
+        <license>GPL-3.0-or-later</license>
+        <forum>https://ompanggin.tistory.com/36</forum>
+        <website>https://www.daum.net/</website>
+        <source>https://ompanggin.tistory.com/36</source>
+        <assets>
+            <icon>resources/icon.png</icon>
+        </assets>
+        <summary lang="en_US">Daum Movie Scraper in Python v1.0.0</summary>
+        <summary lang="ko_KR">Daum 영화 정보수집기 v1.0.0</summary>
+        <description lang="en_US">The metadata scraper for movie with daum web site</description>
+        <description lang="ko_KR">Daum 사이트에서 영화정보를 수집하여 정리해주는 metadata scraper</description>
+    </extension>
+</addon>

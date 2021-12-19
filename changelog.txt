@@ -1,0 +1,4 @@
+v1.0.0 (2021-12-25)
+- Initial version
+- Change xml to python for supporting Kodi +19
+- Update daum links
