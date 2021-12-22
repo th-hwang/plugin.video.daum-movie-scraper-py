@@ -253,6 +253,23 @@
 
 
 
+* TrailInfo
+
+  * DAUM_API_VIDEO = "http://movie.daum.net/api/video/list/movie/{movieId}?page=1&size=20"
+
+    * {movieId}를 이용하여 동영상 리스트를 확보하여 subtilte에 "메인 예고, 공식 예고, 본 예고, 티저 예고, 1차, 2차 예고" 등이 있는 첫번째 traiier의 linkId를 찾음.
+
+  * DAUM_API_TRAILER_INFO =  "https://play-tv.kakao.com/api/v1/ft/playmeta/cliplink/{linkId}?fileds=@html5vod&service=und_player&type=VOD" 의 "videoOutputList" 에서 가용한 예고편의 해상도가 있음. 
+
+    * {linkId}를 이용하여 가용한 해상도를 구하고, HIGH 720p가 있을 이를 default로 사용함. 없으면 MAIN,BASE, LOW 순으로.
+    * (Mode : 해상도) HIGH4 :1080p 1920x1080, HIGH : 720p1280x720, MAIN: 480p 854x480, BASE : 360p 640x360, LOW : 240p 426x240, AUDIO 0x0 로 구성되어 있음
+
+  * DAUM_API_TRAILER_PLAYABLE_URL = "https://play-tv.kakao.com/katz/v3/ft/cliplink/{linkId}/readyNplay?player=monet_html5&uuid=3244cf0161c250497bcf962be670fad0&profile={mode}&service=und_player&section=und_player&fields=seekUrl,abrVideoLocationList&playerVersion=3.11.14&appVersion=96.0.4664.110&startPosition=0&tid=&dteType=PC&continuousPlay=false&autoPlay=false&contentType=&drmType=widevine&ab=&literalList=&1640124549976"
+
+       * {linkId} 와 {mode} 를 입력으로하여 playable trailer url을 찾아냄.
+
+       
+
 - Debugging
   - 한글처리에서 6시간 넘게 고생함. 
   - mac용이어서 인지 모르겠는데, 한글을 자소를 분리한 형태로 다루고 보여줄 때만 모아서 보여줌.

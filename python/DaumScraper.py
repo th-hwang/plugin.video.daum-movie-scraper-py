@@ -124,6 +124,27 @@ class CScraper:
         html = self._getHtml(DAUM_API_VIDEO.format(movieId=movieId))
         return json.loads(html)
 
+    def _getTrailerInfoAPI(self, linkId):
+        # Trailer를 가지고 있는 KakaoTV 의 채널 등의 정보, 가용한 Trailer 해상도 정보가 있음.
+        DAUM_API_TRAILER_INFO = (
+            "https://play-tv.kakao.com/api/v1/ft/playmeta/cliplink/{linkId}?fileds=@html5vod"
+            + "&service=und_player&type=VOD"
+        )
+
+        html = self._getHtml(DAUM_API_TRAILER_INFO.format(linkId=linkId))
+        return json.loads(html)
+
+    def _getTrailerUrlAPI(self, linkId, mode="HIGH"):
+        DAUM_API_TRAILER_PLAYABLE_URL = (
+            "https://play-tv.kakao.com/katz/v3/ft/cliplink/{linkId}/readyNplay?player=monet_html5"
+            + "&uuid=3244cf0161c250497bcf962be670fad0&profile={mode}&service=und_player"
+            + "&section=und_player&fields=seekUrl,abrVideoLocationList&playerVersion=3.11.14"
+            + "&appVersion=96.0.4664.110&startPosition=0&tid=&dteType=PC&continuousPlay=false"
+            + "&autoPlay=false&contentType=&drmType=widevine&ab=&literalList=&1640124549976"
+        )
+        html = self._getHtml(DAUM_API_TRAILER_PLAYABLE_URL.format(linkId=linkId, mode=mode))
+        return json.loads(html)
+
     def _getPrepTitle(self, strKodiTitle, bAddYear=True):
         # 확장자 삭제, 한글제목, 영문제목, 제작년도가 있으면 분리해서 dictionary로 리턴
         def cleanTitle(strTitle):
@@ -422,30 +443,50 @@ class CScraper:
 
         return result if len(result) > 0 else None
 
+    def _parsingTrailer(self, linkId):
+        # trailerInfo 에서 해상도 정하고 -> trailerUrl에서 playable url 을 구함
+        rltAPI = self._getTrailerInfoAPI(linkId)
+        if rlt := rltAPI.get("clipLink", {}).get("clip", {}).get("videoOutputList"):
+            modeList = list()
+            if len(rlt) > 0:
+                modeList = [item.get("profile") for item in rlt]
+
+            if len(modeList) > 0:
+                # 1-> 5 순으로 가용가능한지 확인하여 있으면 사용함.
+                modeOrder = ((2, "HIGH4"), (1, "HIGH"), (3, "MAIN"), (4, "BASE"), (5, "LOW"))
+                for order, mode in sorted(modeOrder):
+                    if mode in modeList:
+                        break
+
+                if rlt2 := self._getTrailerUrlAPI(linkId, mode):
+                    url = rlt2.get("videoLocation", {}).get("url")
+                    contentType = rlt2.get("videoLocation", {}).get("contentType")
+
+                    if url and contentType:
+                        return url + "&type=video%2F" + contentType.lower()
+
+        return None
+
     def getTrailerInfo(self, **kwargs):  # rltAPI= videoAPI, movieId=137317
         rltAPI = kwargs.get("rltAPI")
         if movieId := kwargs.get("movieId"):
             rltAPI = self._getVideoAPI(movieId)
 
         if rltAPI and (apiVideoContents := rltAPI.get("contents")):
-            p = re.compile("메인|공식")
+            p = re.compile("메인|공식|본|티저|차")
             q = re.compile("예고")
             r = re.compile("(\\d*)$")
 
-            # "videoUrl": "https://tv.kakao.com/channel/462787/cliplink/417115239" 이 페이주 중에서 아래가 player
-            # https://play-tv.kakao.com/embed/player/cliplink/417115239?service=und_player
-
-            DAUM_API_TRAILER = "https://play-tv.kakao.com/embed/player/cliplink/{id}?service=und_player"
-
-            for item in apiVideoContents:
-
-                if title := item.get("title"):
+            # 메인 예고, 공식 예고, 본 예고, 티저 예고, 1차, 2차 예고 등이 있는 첫번째 trailier의 linkId return
+            for trailerInfo in apiVideoContents:
+                if title := trailerInfo.get("subtitle"):
                     if p.search(title) and q.search(title):
-                        if videoUrl := item.get("videoUrl"):
-                            if id := r.search(videoUrl).group(1):
-                                item["trailerUrl"] = DAUM_API_TRAILER.format(id=id)
-                                return {"trailerInfo": item}
-
+                        if videoUrl := trailerInfo.get("videoUrl"):
+                            if linkId := r.search(videoUrl).group(1):
+                                trailerInfo["linkId"] = linkId
+                                if trailerUrl := self._parsingTrailer(linkId):
+                                    trailerInfo["trailerUrl"] = trailerUrl
+                        return {"trailerInfo": trailerInfo}
         return None
 
     def getTotalMovieInfos(self, **kwargs):  # strKodiTitle = strKodiTitle, movieIdInfo = movieIdInfo, movieId=137317
@@ -683,6 +724,19 @@ class CTest(CKodi, CScraper):
         print("[ movieId ] ---------------------------- ")
         print(json.dumps(self.getTotalMovieInfos(movieId=movieIdInfo.get("movieId")), indent=4, ensure_ascii=False))
 
+    def testTrailerParsing(self, titleList=[]):
+        if not titleList:
+            titleList = [
+                "미나리(2020).mp4",
+                "마야2.mp4",
+                "다이하드(1988).mp4",  # trailer가 없는 경우
+            ]
+
+        for tl in titleList if type(titleList) is list else [titleList]:
+            if movieId := self.getMovieIdInfo(tl).get("movieId"):
+                print(tl + "(" + movieId + ") : ", end="")
+                print(self.getTrailerInfo(movieId=movieId))
+
     def testRun(self):
 
         # self.componentTest()
@@ -691,7 +745,9 @@ class CTest(CKodi, CScraper):
         # self.mkTestImageHtml("test_script/Test_Title_List.json")
         # self.testTitleListInBlog()
         # self.testTotalMovieInfos("미나리 2020.mp4")
-        self.testTotalMovieInfos("천공의-성_라퓨타.mp4")
+        # self.testTotalMovieInfos("천공의-성_라퓨타.mp4")
+        # self.testTrailerParsing("미나리(2020).mp4")
+        self.testTrailerParsing("미나리(2020).mp4")
 
 
 if __name__ == "__main__":
