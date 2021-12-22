@@ -1,9 +1,5 @@
 ## Daum Movie Scraper in Python v1.0 for Kodi v19 Matrix
 
-(5.22)에 작성 중이라고 했는데, Kodi를 잘 안쓰다 보니 늦어지네요. ^^;;
-이제는 정말로 연내 완성을 목표로 작성 중입니다.
-
-
 
 #### 1. Daum search page & APIs
 
