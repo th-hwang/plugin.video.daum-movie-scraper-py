@@ -8,7 +8,11 @@
 
 ### Changelog
 
-* v1.0.0 (2021.12.25)
+* v1.1.0 (2021-12-31) 
+  * add pasring trailer info
+
+* v1.0.0 (2021-12-25)
   * Initial version
   * Change xml to python for supporting Kodi +19
   * Update daum links
+
