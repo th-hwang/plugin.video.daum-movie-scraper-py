@@ -110,17 +110,17 @@ class CScraper:
         return json.loads(html)
 
     def _getMainAPI(self, movieId):
-        DAUM_API_MAIN = "http://movie.daum.net/api/movie/{movieId}/main"
+        DAUM_API_MAIN = "https://movie.daum.net/api/movie/{movieId}/main"
         html = self._getHtml(DAUM_API_MAIN.format(movieId=movieId))
         return json.loads(html)
 
     def _getPhotoAPI(self, movieId, size):
-        DAUM_API_PHOTO = "http://movie.daum.net/api/movie/{movieId}/photoList?page=1&size={size}&adultFlag=T"
+        DAUM_API_PHOTO = "https://movie.daum.net/api/movie/{movieId}/photoList?page=1&size={size}&adultFlag=T"
         html = self._getHtml(DAUM_API_PHOTO.format(movieId=movieId, size=size))
         return json.loads(html)
 
     def _getVideoAPI(self, movieId):
-        DAUM_API_VIDEO = "http://movie.daum.net/api/video/list/movie/{movieId}?page=1&size=20"
+        DAUM_API_VIDEO = "https://movie.daum.net/api/video/list/movie/{movieId}?page=1&size=20"
         html = self._getHtml(DAUM_API_VIDEO.format(movieId=movieId))
         return json.loads(html)
 
@@ -575,9 +575,9 @@ class CTest(CKodi, CScraper):
 
             if movieId := movieInfo.get("movieId"):
                 APIs = {
-                    "DAUM_API_MAIN": "http://movie.daum.net/api/movie/{movieId}/main",
-                    "DAUM_API_PHOTO": "http://movie.daum.net/api/movie/{movieId}/photoList?page=1&size=20&adultFlag=T",
-                    "DAUM_API_VIDEO": "http://movie.daum.net/api/video/list/movie/{movieId}?page=1&size=20",
+                    "DAUM_API_MAIN": "https://movie.daum.net/api/movie/{movieId}/main",
+                    "DAUM_API_PHOTO": "https://movie.daum.net/api/movie/{movieId}/photoList?page=1&size=20&adultFlag=T",
+                    "DAUM_API_VIDEO": "https://movie.daum.net/api/video/list/movie/{movieId}?page=1&size=20",
                 }
 
                 for apiName, apiUrl in APIs.items():
